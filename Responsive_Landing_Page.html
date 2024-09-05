@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Shopping</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            scroll-behavior: smooth;
+        }
+
+        #navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #2c3e50;
+            color: white;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            transition: background-color 0.3s;
+        }
+
+        #navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        #navbar li {
+            padding: 14px 20px;
+        }
+
+        #navbar a {
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: color 0.3s, background-color 0.3s;
+        }
+
+        #navbar a:hover, #navbar a.active {
+            background-color: #34495e;
+        }
+
+        #content {
+            padding-top: 60px; /* To prevent content from being hidden behind the fixed navbar */
+        }
+
+        section {
+            padding: 60px 20px;
+            height: 100vh;
+        }
+
+        #home { background-color: #ecf0f1; }
+        #products { background-color: #dce6f1; }
+        #about { background-color: #cce0f0; }
+        #reviews { background-color: #b3cde6; }
+        #contact { background-color: #99c0de; }
+
+        /* Scroll Indicator */
+        #progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 5px;
+            background-color: #e74c3c;
+            z-index: 1001;
+        }
+
+        /* Responsive Navbar */
+        .menu-icon {
+            display: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            #navbar ul {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+            #navbar ul.active {
+                display: flex;
+            }
+            .menu-icon {
+                display: block;
+            }
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .product-item {
+            margin: 15px;
+            width: calc(33.333% - 30px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: white;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .product-item:hover {
+            transform: scale(1.05);
+        }
+
+        .product-item img {
+            width: 100%;
+            height: auto;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .product-item h3 {
+            margin: 15px 0;
+        }
+
+        .product-item p {
+            margin: 0 15px 15px;
+        }
+
+        /* Reviews */
+        .review {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 20px;
+            padding: 20px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .review p {
+            font-style: italic;
+        }
+
+        .review h4 {
+            margin: 10px 0 0;
+        }
+
+        .review span {
+            color: gray;
+            font-size: 0.9em;
+        }
+
+        /* Contact Form */
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        form label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        form input, form textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        form input[type="submit"] {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form input[type="submit"]:hover {
+            background-color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div id="progress"></div>
+    <nav id="navbar">
+        <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#reviews">Reviews</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <section id="home">
+            <h1>Welcome to Our Online Store</h1>
+            <p>Discover amazing products at unbeatable prices.</p>
+        </section>
+        <section id="products">
+            <h1>Our Products</h1>
+            <div class="product-grid">
+                <div class="product-item">
+                    <img src="https://m.media-amazon.com/images/I/61zJkTcz1fL._SX679_.jpg" alt="Product 1">
+                    <h3>Arabest Personal Smoothie Blender, Portable Smoothie Blender With 20.3 Oz</h3>
+                    <p>₹7,784.00</p>
+                </div>
+                <div class="product-item">
+                    <img src="https://th.bing.com/th?id=OPAC.9TXe%2f1BKCdtxkw474C474&w=592&h=550&o=5&dpr=1.3&pid=21.1" alt="Product 2">
+                    <h3>AAOVEFOX 3 PCS Leakproof Unbreakable Sipper Water Bottle For Sports Travel</h3>
+                    <p>₹498.00</p>
+                </div>
+                <div class="product-item">
+                    <img src="https://th.bing.com/th?id=OPAC.JhJEECIT7%2faElA474C474&w=592&h=550&o=5&dpr=1.3&pid=21.1" alt="Product 3">
+                    <h3>Oneplus Open 5G 512 GB 16 GB RAM Emerald Dusk, Mobile Phone</h3>
+                    <p>₹1,39,999.00</p>
+                </div>
+            </div>
+        </section>
+        <section id="about">
+            <h1>About Us</h1>
+            <p>We are dedicated to providing the best online shopping experience. Our products are sourced from top-quality suppliers and offered at competitive prices.</p>
+        </section>
+        <section id="reviews">
+            <h1>Customer Reviews</h1>
+            <div class="review">
+                <p>"Great shopping experience! The products arrived on time and were exactly as described."</p>
+                <h4>Sarah Lee</h4>
+                <span>Verified Buyer</span>
+            </div>
+            <div class="review">
+                <p>"Excellent customer service. I had an issue with my order and it was resolved quickly."</p>
+                <h4>Michael Brown</h4>
+                <span>Verified Buyer</span>
+            </div>
+        </section>
+        <section id="contact">
+            <h1>Contact Us</h1>
+            <p>If you have any questions or need further information, feel free to contact us.</p>
+            <form>
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name"><br>
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email"><br>
+                <label for="message">Message:</label><br>
+                <textarea id="message" name="message" rows="4"></textarea><br>
+                <input type="submit" value="Submit">
+            </form>
+        </section>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            var navbar = document.getElementById('navbar');
+            var progress = document.getElementById('progress');
+            var scrollTop = document.documentElement.scrollTop;
+            var windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            var scrollPercent = (scrollTop / windowHeight) * 100;
+            progress.style.width = scrollPercent + '%';
+
+            if (scrollTop > 50) {
+                navbar.style.backgroundColor = '#34495e';
+            } else {
+                navbar.style.backgroundColor = '#2c3e50';
+            }
+
+            highlightActiveSection();
+        });
+
+        function toggleMenu() {
+            var navbarUl = document.querySelector('#navbar ul');
+            navbarUl.classList.toggle('active');
+        }
+
+        document.querySelectorAll('#navbar a').forEach(function(item) {
+            item.addEventListener('mouseenter', function() {
+                this.style.color = '#e74c3c';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.color = this.classList.contains('active') ? '#e74c3c' : '#fff';
+            });
+        });
+
+        function highlightActiveSection() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('#navbar a');
+
+            let index = sections.length;
+
+            while (--index && window.scrollY + 60 < sections[index].offsetTop) {}
+
+            navLinks.forEach((link) => link.classList.remove('active'));
+            navLinks[index].classList.add('active');
+        }
+
+        highlightActiveSection();
+    </script>
+</body>
+</html>
