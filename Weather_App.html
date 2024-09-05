@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #83a4d4, #b6fbff, #f8b195, #f67280);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #333;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            margin-top: 50px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+        .search-box button {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            outline: none;
+        }
+        .search-box button img {
+            width: 20px;
+        }
+        .weather-icon img {
+            width: 100px;
+        }
+        .weather-info {
+            margin: 20px 0;
+        }
+        .weather-info div {
+            margin: 10px 0;
+        }
+        .weather-info .icon {
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #333;
+        }
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+        .back-button:hover {
+            background-color: #d32f2f;
+        }
+        .forecast {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .forecast div {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            width: 30%;
+        }
+        .toggle-button {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+        .toggle-button:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="input-container">
+        <h1>Weather App</h1>
+        <div class="search-box">
+            <input type="text" id="location" placeholder="Enter location">
+            <button onclick="getWeather()">
+                <img src="https://cdn-icons-png.flaticon.com/128/54/54481.png" alt="Search">
+            </button>
+        </div>
+    </div>
+
+    <div class="container" id="weather-container" style="display: none;">
+        <h1>Weather Results</h1>
+        <div id="weather" class="weather-info">
+            <!-- Weather details will be inserted here -->
+        </div>
+        <div class="forecast" id="forecast">
+            <!-- Forecast details will be inserted here -->
+        </div>
+        <button class="toggle-button" onclick="toggleTemperature()">Toggle °C/°F</button>
+        <button class="back-button" onclick="goBack()">Back</button>
+    </div>
+
+    <div class="footer">
+        <p>Weather data provided by <a href="https://openweathermap.org" target="_blank" style="color: #333; text-decoration: underline;">OpenWeatherMap</a></p>
+    </div>
+
+    <script>
+        const API_KEY = 'deb0fc37911c7785a3127ce7901914c9';
+        let currentUnit = 'metric';
+
+        const weatherIcons = {
+            'Clear': 'https://cdn-icons-png.flaticon.com/128/3222/3222800.png',
+            'Clouds': 'https://cdn-icons-png.flaticon.com/128/414/414927.png',
+            'Drizzle': 'https://cdn-icons-png.flaticon.com/128/1809/1809557.png',
+            'Mist': 'https://cdn-icons-png.flaticon.com/128/4161/4161256.png',
+            'Rain': 'https://cdn-icons-png.flaticon.com/128/4088/4088981.png',
+            'Snow': 'https://cdn-icons-png.flaticon.com/128/1008/100825.png',
+            'Wind': 'https://cdn-icons-png.flaticon.com/128/2011/2011448.png',
+            'Humidity': 'https://cdn-icons-png.flaticon.com/128/481/481453.png'
+        };
+
+        function kelvinToCelsius(kelvin) {
+            return kelvin - 273.15;
+        }
+
+        function kelvinToFahrenheit(kelvin) {
+            return (kelvin - 273.15) * 9/5 + 32;
+        }
+
+        function toggleTemperature() {
+            currentUnit = currentUnit === 'metric' ? 'imperial' : 'metric';
+            const location = document.getElementById('location').value;
+            getWeather(location);
+        }
+
+        async function getWeather() {
+            const location = document.getElementById('location').value;
+            if (!location) return;
+
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${API_KEY}&units=${currentUnit}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                displayWeather(data);
+                getForecast(data.coord.lat, data.coord.lon);
+            } else {
+                alert('Location not found. Please try again.');
+            }
+        }
+
+        async function getForecast(lat, lon) {
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${currentUnit}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                displayForecast(data);
+            }
+        }
+
+        function displayWeather(data) {
+            const weatherContainer = document.getElementById('weather');
+            const weatherMain = data.weather[0].main;
+            const iconUrl = weatherIcons[weatherMain] || weatherIcons['Clear'];
+            const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
+
+            weatherContainer.innerHTML = `
+                <div>
+                    <h2>${data.name}, ${data.sys.country}</h2>
+                    <div class="weather-icon">
+                        <img src="${iconUrl}" alt="${weatherMain}">
+                    </div>
+                </div>
+                <div>
+                    <strong>Temperature:</strong> ${data.main.temp}${tempUnit}
+                </div>
+                <div>
+                    <strong>Weather:</strong> ${data.weather[0].description}
+                </div>
+                <div>
+                    <img src="${weatherIcons['Humidity']}" alt="Humidity" class="icon"> <strong>Humidity:</strong> ${data.main.humidity}%
+                </div>
+                <div>
+                    <img src="${weatherIcons['Wind']}" alt="Wind" class="icon"> <strong>Wind Speed:</strong> ${data.wind.speed} m/s
+                </div>
+                <div>
+                    <strong>Pressure:</strong> ${data.main.pressure} hPa
+                </div>
+                <div>
+                    <strong>Sunrise:</strong> ${new Date(data.sys.sunrise * 1000).toLocaleTimeString()}
+                </div>
+                <div>
+                    <strong>Sunset:</strong> ${new Date(data.sys.sunset * 1000).toLocaleTimeString()}
+                </div>
+                                <div>
+                    <strong>Visibility:</strong> ${data.visibility / 1000} km
+                </div>
+            `;
+
+            document.getElementById('input-container').style.display = 'none';
+            document.getElementById('weather-container').style.display = 'block';
+        }
+
+        function displayForecast(data) {
+            const forecastContainer = document.getElementById('forecast');
+            forecastContainer.innerHTML = '';
+
+            for (let i = 1; i <= 3; i++) {
+                const forecast = data.list[i * 8]; // Getting the weather at 24-hour intervals
+                const weatherMain = forecast.weather[0].main;
+                const iconUrl = weatherIcons[weatherMain] || weatherIcons['Clear'];
+                const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
+
+                const forecastDiv = document.createElement('div');
+                forecastDiv.innerHTML = `
+                    <div>
+                        <h3>${new Date(forecast.dt * 1000).toLocaleDateString()}</h3>
+                        <div class="weather-icon">
+                            <img src="${iconUrl}" alt="${weatherMain}">
+                        </div>
+                        <div>
+                            <strong>Temp:</strong> ${forecast.main.temp}${tempUnit}
+                        </div>
+                        <div>
+                            <strong>Weather:</strong> ${forecast.weather[0].description}
+                        </div>
+                    </div>
+                `;
+                forecastContainer.appendChild(forecastDiv);
+            }
+        }
+
+        function goBack() {
+            document.getElementById('input-container').style.display = 'block';
+            document.getElementById('weather-container').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
