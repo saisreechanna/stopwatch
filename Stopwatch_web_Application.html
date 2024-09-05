@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Stopwatch</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 350px;
+        }
+
+        .stopwatch {
+            margin-bottom: 20px;
+        }
+
+        #display {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .buttons button {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .buttons button:hover:not(:disabled) {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .buttons button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .buttons .reset-btn {
+            background: #dc3545;
+        }
+
+        .buttons .reset-btn:hover:not(:disabled) {
+            background: #c82333;
+        }
+
+        .buttons .lap-btn {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .buttons .lap-btn:hover:not(:disabled) {
+            background: #e0a800;
+        }
+
+        .laps h2 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        #lapsList {
+            list-style: none;
+            padding: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #e9ecef;
+            margin-top: 10px;
+        }
+
+        #lapsList li {
+            background: #f8f9fa;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #lapsList li span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Stopwatch</h1>
+        <div class="stopwatch">
+            <div id="display">00:00:00.000</div>
+            <div class="buttons">
+                <button id="startStopBtn">Start</button>
+                <button id="resetBtn" class="reset-btn" disabled>Reset</button>
+                <button id="lapBtn" class="lap-btn" disabled>Lap</button>
+                <button id="splitBtn" class="lap-btn" disabled>Split</button>
+            </div>
+        </div>
+        <div class="laps">
+            <h2>Lap & Split Times</h2>
+            <ul id="lapsList"></ul>
+        </div>
+    </div>
+    <script>
+        let startTime;
+        let updatedTime;
+        let difference;
+        let tInterval;
+        let running = false;
+        let lapCounter = 1;
+        let splitCounter = 1;
+
+        const display = document.getElementById('display');
+        const startStopBtn = document.getElementById('startStopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const lapBtn = document.getElementById('lapBtn');
+        const splitBtn = document.getElementById('splitBtn');
+        const lapsList = document.getElementById('lapsList');
+
+        startStopBtn.addEventListener('click', startStop);
+        resetBtn.addEventListener('click', reset);
+        lapBtn.addEventListener('click', recordLap);
+        splitBtn.addEventListener('click', recordSplit);
+
+        function startStop() {
+            if (!running) {
+                start();
+            } else {
+                stop();
+            }
+        }
+
+        function start() {
+            startTime = new Date().getTime() - (difference || 0);
+            tInterval = setInterval(updateDisplay, 1);
+            running = true;
+            startStopBtn.textContent = 'Pause';
+            resetBtn.disabled = true;
+            lapBtn.disabled = false;
+            splitBtn.disabled = false;
+        }
+
+        function stop() {
+            clearInterval(tInterval);
+            running = false;
+            startStopBtn.textContent = 'Start';
+            resetBtn.disabled = false;
+            lapBtn.disabled = true;
+            splitBtn.disabled = true;
+        }
+
+        function reset() {
+            clearInterval(tInterval);
+            running = false;
+            display.textContent = '00:00:00.000';
+            difference = 0;
+            startStopBtn.textContent = 'Start';
+            resetBtn.disabled = true;
+            lapBtn.disabled = true;
+            splitBtn.disabled = true;
+            lapsList.innerHTML = '';
+            lapCounter = 1;
+            splitCounter = 1;
+        }
+
+        function updateDisplay() {
+            updatedTime = new Date().getTime();
+            difference = updatedTime - startTime;
+            let hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            let milliseconds = Math.floor((difference % 1000));
+
+            hours = (hours < 10) ? '0' + hours : hours;
+            minutes = (minutes < 10) ? '0' + minutes : minutes;
+            seconds = (seconds < 10) ? '0' + seconds : seconds;
+            milliseconds = (milliseconds < 100) ? '0' + milliseconds : milliseconds;
+            milliseconds = (milliseconds < 10) ? '00' + milliseconds : milliseconds;
+
+            display.textContent = `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
+
+        function recordLap() {
+            const lapTime = display.textContent;
+            const li = document.createElement('li');
+            li.innerHTML = `<span>Lap ${lapCounter}:</span> ${lapTime}`;
+            lapsList.appendChild(li);
+            lapCounter++;
+        }
+
+        function recordSplit() {
+            const splitTime = display.textContent;
+            const li = document.createElement('li');
+            li.innerHTML = `<span>Split ${splitCounter}:</span> ${splitTime}`;
+            lapsList.appendChild(li);
+            splitCounter++;
+        }
+    </script>
+</body>
+</html>
