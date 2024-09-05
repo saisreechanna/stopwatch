@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Tic-Tac-Toe</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: #fff;
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .cell:hover {
+            background: #007BFF;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .cell.win {
+            background: #28a745 !important;
+            color: white !important;
+            animation: blink 1s infinite alternate;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .buttons button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .buttons button:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .buttons .reset-btn {
+            background: #dc3545;
+        }
+
+        .buttons .reset-btn:hover {
+            background: #c82333;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .scores div {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            width: 45%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .scores div h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .scores div p {
+            font-size: 1.5rem;
+            margin: 5px 0 0;
+        }
+
+        #message {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Tic-Tac-Toe</h1>
+        <div class="scores">
+            <div>
+                <h2>Player X</h2>
+                <p id="scoreX">0</p>
+            </div>
+            <div>
+                <h2>Player O / AI</h2>
+                <p id="scoreO">0</p>
+            </div>
+        </div>
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div class="buttons">
+            <button id="resetBtn" class="reset-btn">Reset</button>
+            <button id="aiBtn">Play Against AI</button>
+        </div>
+        <p id="message"></p>
+    </div>
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const board = document.getElementById('board');
+        const resetBtn = document.getElementById('resetBtn');
+        const aiBtn = document.getElementById('aiBtn');
+        const message = document.getElementById('message');
+        const scoreXDisplay = document.getElementById('scoreX');
+        const scoreODisplay = document.getElementById('scoreO');
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let boardState = ['', '', '', '', '', '', '', '', ''];
+        let aiEnabled = false;
+        let scoreX = 0;
+        let scoreO = 0;
+
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        resetBtn.addEventListener('click', resetGame);
+        aiBtn.addEventListener('click', toggleAI);
+
+        function handleCellClick(event) {
+            const clickedCell = event.target;
+            const clickedCellIndex = clickedCell.getAttribute('data-index');
+
+            if (boardState[clickedCellIndex] !== '' || !gameActive) {
+                return;
+            }
+
+            updateCell(clickedCell, clickedCellIndex);
+            checkResult();
+            if (aiEnabled && gameActive) {
+                setTimeout(handleAIMove, 500);
+            }
+        }
+
+        function updateCell(cell, index) {
+            boardState[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.style.pointerEvents = 'none';
+        }
+
+        function checkResult() {
+            let roundWon = false;
+            let winningLine = null;
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                    roundWon = true;
+                    winningLine = [a, b, c];
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                gameActive = false;
+                message.textContent = `Player ${currentPlayer} has won!`;
+                highlightWinningLine(winningLine);
+                updateScore();
+                return;
+            }
+
+            if (!boardState.includes('')) {
+                gameActive = false;
+                message.textContent = 'Game ended in a draw!';
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function highlightWinningLine(line) {
+            line.forEach(index => {
+                cells[index].classList.add('win');
+            });
+        }
+
+        function handleAIMove() {
+            let availableCells = [];
+            boardState.forEach((cell, index) => {
+                if (cell === '') availableCells.push(index);
+            });
+
+            const randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+            const cell = cells[randomIndex];
+            updateCell(cell, randomIndex);
+            checkResult();
+        }
+
+        function resetGame() {
+            boardState = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.style.pointerEvents = 'auto';
+                cell.classList.remove('win');
+            });
+            message.textContent = '';
+        }
+
+        function toggleAI() {
+            aiEnabled = !aiEnabled;
+            aiBtn.textContent = aiEnabled ? 'Play Against Human' : 'Play Against AI';
+            resetGame();
+        }
+
+        function updateScore() {
+            if (currentPlayer === 'X') {
+                scoreX++;
+                scoreXDisplay.textContent = scoreX;
+            } else {
+                scoreO++;
+                scoreODisplay.textContent = scoreO;
+            }
+        }
+    </script>
+</body>
+</html>
